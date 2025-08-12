@@ -20,6 +20,8 @@ try:
 except Exception:
     sys.exit("Invalid IP entered.")
 
+pygame.init()
+
 # set display and program caption
 SCREEN_DIMENSIONS = (1280, 720)
 screen = pygame.display.set_mode(SCREEN_DIMENSIONS)
@@ -32,6 +34,13 @@ clock = pygame.time.Clock()
 BACKGROUND_IMG = pygame.image.load("graphics/background.png")
 IMG_SLOTS = pygame.image.load("graphics/imgslots.png")
 IMG_SLOTS_POSITION = (384, 74)
+
+# load font
+FONT_RUBIK_48 = pygame.font.Font("Rubik-Medium.ttf", 48)
+
+# guess text
+GUESS_TEXT = "Click on the rotten fruit."
+GUESS_TEXT_POS = (365, 620)
 
 # fruit images
 received_images = []
@@ -51,6 +60,9 @@ img_positions = [
     (560, 418),
     (728, 418),
 ]
+
+# color constants
+WHITE = (255, 255, 255)
 
 # current state of the program (waiting, guessing, done)
 state = ['waiting']
@@ -168,11 +180,11 @@ if __name__ == '__main__':
     # main code loop
     running = True
     while running:
-
         if state[0] == 'waiting':
-
             # display background
             screen.blit(BACKGROUND_IMG, (0, 0))
+
+            # update display
             pygame.display.update()
 
             # wait for images
@@ -185,8 +197,13 @@ if __name__ == '__main__':
             for i, img in enumerate(received_images):
                 screen.blit(img, img_positions[i])
 
+            # clear fruit images list
             received_images.clear()
 
+            # display guess text
+            display_text(GUESS_TEXT, FONT_RUBIK_48, WHITE, GUESS_TEXT_POS)
+
+            # update display
             pygame.display.update()
 
             # get input
