@@ -34,6 +34,10 @@ clock = pygame.time.Clock()
 BACKGROUND_IMG = pygame.image.load("graphics/background.png")
 IMG_SLOTS = pygame.image.load("graphics/imgslots.png")
 IMG_SLOTS_POSITION = (384, 74)
+PASS_IMG = pygame.image.load("graphics/pass.png")
+FAIL_IMG = pygame.image.load("graphics/fail.png")
+PASSFAIL_IMG = FAIL_IMG
+PASSFAIL_IMG_POSITION = (509, 229)
 
 # load font
 FONT_RUBIK_48 = pygame.font.Font("Rubik-Medium.ttf", 48)
@@ -64,7 +68,7 @@ img_positions = [
 # color constants
 WHITE = (255, 255, 255)
 
-# current state of the program (waiting, guessing, done)
+# current state of the program (waiting, guessing, pass, fail)
 state = ['waiting']
 
 def get_img(comm, data):
@@ -103,9 +107,9 @@ def get_end_status(comm, data):
     :param data:
     :return:
     '''
-    end_status = data[0]
+    state[0] = data[0]
 
-    
+    print(state[0])
 
 
 # dictionary of command code : command function
@@ -172,7 +176,6 @@ if __name__ == '__main__':
     threading.Thread(target=handle_msgs, args=(myComm, msgsQ), daemon=True).start()
 
 
-
     # wait for encryption key to be set
     while not myComm.cipher:
         pass
@@ -188,45 +191,65 @@ if __name__ == '__main__':
             pygame.display.update()
 
             # wait for images
-            while len(received_images) < 9:
+            while len(received_images) < 9 and state[0] == 'waiting':
                 pass
 
-            # display images
-            screen.blit(IMG_SLOTS, IMG_SLOTS_POSITION)
+            # check if actually waiting and not done
+            if state[0] == 'waiting':
 
-            for i, img in enumerate(received_images):
-                screen.blit(img, img_positions[i])
+                # display images
+                screen.blit(IMG_SLOTS, IMG_SLOTS_POSITION)
 
-            # clear fruit images list
-            received_images.clear()
+                for i, img in enumerate(received_images):
+                    screen.blit(img, img_positions[i])
 
-            # display guess text
-            display_text(GUESS_TEXT, FONT_RUBIK_48, WHITE, GUESS_TEXT_POS)
+                # clear fruit images list
+                received_images.clear()
+
+                # display guess text
+                display_text(GUESS_TEXT, FONT_RUBIK_48, WHITE, GUESS_TEXT_POS)
+
+                # update display
+                pygame.display.update()
+
+                # get input
+                state[0] = 'guessing'
+                while state[0] == 'guessing':
+                    for event in pygame.event.get():
+                        # check for quit
+                        if event.type == pygame.QUIT:
+                            close()
+
+                        # check for mouse click
+                        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                            # check if a fruit was clicked
+                            hovered_img_index = None
+                            for i, pos in enumerate(img_positions):
+                                bottom_right = tuple(a + b - 1 for a, b in zip(pos, FRUIT_IMG_SIZE))
+                                if check_button(pos, bottom_right, event.pos):
+                                    # send guess
+                                    myComm.send_msg(clientProtocol.send_guess(i))
+
+                                    # exit both loops
+                                    state[0] = 'waiting'
+                                    break
+
+        elif state[0] == 'pass':
+            # display background
+            screen.blit(BACKGROUND_IMG, (0, 0))
+
+            # display pass graphics
+            screen.blit(CHECK_IMG, PASSFAIL_IMG_POSITION)
 
             # update display
             pygame.display.update()
 
-            # get input
-            state[0] = 'guessing'
-            while state[0] == 'guessing':
-                for event in pygame.event.get():
-                    # check for quit
-                    if event.type == pygame.QUIT:
-                        close()
+            for event in pygame.event.get():
+                # check for quit
+                if event.type == pygame.QUIT:
+                    close()
 
-                    # check for mouse click
-                    if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                        # check if a fruit was clicked
-                        hovered_img_index = None
-                        for i, pos in enumerate(img_positions):
-                            bottom_right = tuple(a + b - 1 for a, b in zip(pos, FRUIT_IMG_SIZE))
-                            if check_button(pos, bottom_right, event.pos):
-                                # send guess
-                                myComm.send_msg(clientProtocol.send_guess(i))
 
-                                # exit both loops
-                                state[0] = 'waiting'
-                                break
 
 
     # handle exit and disconnect
