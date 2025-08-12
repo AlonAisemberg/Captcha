@@ -68,8 +68,11 @@ img_positions = [
 # color constants
 WHITE = (255, 255, 255)
 
-# current state of the program (waiting, guessing, pass, fail)
+# current state of the program (waiting, guessing, done)
 state = ['waiting']
+
+# pass or fail status
+end_status = ['']
 
 def get_img(comm, data):
     '''
@@ -107,9 +110,9 @@ def get_end_status(comm, data):
     :param data:
     :return:
     '''
-    state[0] = data[0]
+    state[0] = 'done'
 
-    print(state[0])
+    end_status[0] = data[0]
 
 
 # dictionary of command code : command function
@@ -234,12 +237,18 @@ if __name__ == '__main__':
                                     state[0] = 'waiting'
                                     break
 
-        elif state[0] == 'pass':
+        elif state[0] == 'done':
+            # set pass/fail image
+            if end_status[0] == 'pass':
+                PASSFAIL_IMG = PASS_IMG
+            else:
+                PASSFAIL_IMG = FAIL_IMG
+
             # display background
             screen.blit(BACKGROUND_IMG, (0, 0))
 
             # display pass graphics
-            screen.blit(CHECK_IMG, PASSFAIL_IMG_POSITION)
+            screen.blit(PASSFAIL_IMG, PASSFAIL_IMG_POSITION)
 
             # update display
             pygame.display.update()
