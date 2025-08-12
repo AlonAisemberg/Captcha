@@ -69,11 +69,20 @@ img_positions = [
 # color constants
 WHITE = (255, 255, 255)
 
+# button overlays
+HOVER_OVERLAY = pygame.Surface((160, 160), pygame.SRCALPHA)
+HOVER_OVERLAY.fill((150, 150, 150, 60))
+CLICK_OVERLAY = pygame.Surface((160, 160), pygame.SRCALPHA)
+CLICK_OVERLAY.fill((50, 50, 50, 100))
+
 # current state of the program (waiting, guessing, done)
 state = ['waiting']
 
 # pass or fail status
 end_status = ['']
+
+# index of current clicked button
+clicked_index = None
 
 def get_img(comm, data):
     '''
@@ -199,43 +208,57 @@ if __name__ == '__main__':
 
             # check if actually waiting and not done
             if state[0] == 'waiting':
-
-                # display images
-                screen.blit(IMG_SLOTS, IMG_SLOTS_POSITION)
-
-                for i, img in enumerate(received_images):
-                    screen.blit(img, img_positions[i])
-
-                # clear fruit images list
-                received_images.clear()
-
-                # display guess text
-                display_text(GUESS_TEXT, FONT_RUBIK_48, WHITE, GUESS_TEXT_POS)
-
-                # update display
-                pygame.display.update()
-
                 # get input
                 state[0] = 'guessing'
                 while state[0] == 'guessing':
+                    # display background
+                    screen.blit(BACKGROUND_IMG, (0, 0))
+
+                    # display fruit images
+                    screen.blit(IMG_SLOTS, IMG_SLOTS_POSITION)
+                    for i, img in enumerate(received_images):
+                        screen.blit(img, img_positions[i])
+
+                    # display guess text
+                    display_text(GUESS_TEXT, FONT_RUBIK_48, WHITE, GUESS_TEXT_POS)
+
+                    # check inputs
                     for event in pygame.event.get():
                         # check for quit
                         if event.type == pygame.QUIT:
                             close()
 
-                        # check for mouse click
-                        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                            # check if a fruit was clicked
-                            hovered_img_index = None
-                            for i, pos in enumerate(img_positions):
-                                bottom_right = tuple(a + b - 1 for a, b in zip(pos, FRUIT_IMG_SIZE))
-                                if check_button(pos, bottom_right, event.pos):
-                                    # send guess
-                                    myComm.send_msg(clientProtocol.send_guess(i))
+                        for i, pos in enumerate(img_positions):
+                            bottom_right = tuple(a + b - 1 for a, b in zip(pos, FRUIT_IMG_SIZE))
+                            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and check_button(pos, bottom_right, event.pos):
+                                clicked_index = i
 
-                                    # exit both loops
-                                    state[0] = 'waiting'
-                                    break
+                        if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+                            pos = img_positions[clicked_index]
+                            clicked_index = None
+                            bottom_right = tuple(a + b - 1 for a, b in zip(pos, FRUIT_IMG_SIZE))
+                            if check_button(pos, bottom_right, event.pos):
+                                # clear fruit images list
+                                received_images.clear()
+
+                                # send guess
+                                myComm.send_msg(clientProtocol.send_guess(clicked_index))
+
+                                # exit both loops
+                                state[0] = 'waiting'
+                                break
+
+                    if not clicked_index:
+                        for i, pos in enumerate(img_positions):
+                            bottom_right = tuple(a + b - 1 for a, b in zip(pos, FRUIT_IMG_SIZE))
+                            if check_button(pos, bottom_right, pygame.mouse.get_pos()):
+                                screen.blit(HOVER_OVERLAY, pos)
+                    else:
+                        pos = img_positions[clicked_index]
+                        screen.blit(CLICK_OVERLAY, pos)
+
+                    # update display
+                    pygame.display.update()
 
         elif state[0] == 'done':
             # set pass/fail image
