@@ -87,7 +87,7 @@ def handle_guess(comm, ip, data):
         comm.send_msg(ip, serverProtocol.end_msg([session_status]))
     elif session_status == 'fail':
         comm.send_msg(ip, serverProtocol.end_msg([session_status]))
-
+        comm.close_client(ip)
 
 
 def client_connected(comm, ip, data):
@@ -113,7 +113,7 @@ def remove_client(comm, ip, data):
     :param ip: ip of client
     :param data: none
     '''
-    pass #--------------- handle removing client
+    del captcha_sessions[ip]
 
 
 # dictionary of command code : command function

@@ -1,3 +1,4 @@
+import math
 import threading
 from io import BytesIO
 
@@ -36,8 +37,8 @@ IMG_SLOTS = pygame.image.load("graphics/imgslots.png")
 IMG_SLOTS_POSITION = (384, 74)
 PASS_IMG = pygame.image.load("graphics/pass.png")
 FAIL_IMG = pygame.image.load("graphics/fail.png")
-PASSFAIL_IMG = FAIL_IMG
-PASSFAIL_IMG_POSITION = (509, 229)
+END_IMG = FAIL_IMG
+END_IMG_POSITION = (509, 229)
 
 # load font
 FONT_RUBIK_48 = pygame.font.Font("Rubik-Medium.ttf", 48)
@@ -111,7 +112,6 @@ def get_end_status(comm, data):
     :return:
     '''
     state[0] = 'done'
-
     end_status[0] = data[0]
 
 
@@ -240,15 +240,15 @@ if __name__ == '__main__':
         elif state[0] == 'done':
             # set pass/fail image
             if end_status[0] == 'pass':
-                PASSFAIL_IMG = PASS_IMG
+                END_IMG = PASS_IMG
             else:
-                PASSFAIL_IMG = FAIL_IMG
+                END_IMG = FAIL_IMG
 
             # display background
             screen.blit(BACKGROUND_IMG, (0, 0))
 
             # display pass graphics
-            screen.blit(PASSFAIL_IMG, PASSFAIL_IMG_POSITION)
+            screen.blit(END_IMG, END_IMG_POSITION)
 
             # update display
             pygame.display.update()
