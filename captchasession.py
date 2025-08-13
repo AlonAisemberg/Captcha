@@ -4,7 +4,7 @@ REQUIRED_SUCCESSES = 3
 class CaptchaSession:
     def __init__(self):
         '''
-
+        initialize a new captcha session
         '''
         self.success_count = 0
         self.attempt_count = 0
@@ -12,9 +12,8 @@ class CaptchaSession:
 
     def handle_answer(self, answer):
         '''
-
-        :param answer:
-        :return:
+        handle a client's answer
+        :param answer: guess of which fruit is rotten (0-8)
         '''
         self.attempt_count += 1
 
@@ -23,8 +22,11 @@ class CaptchaSession:
 
     def get_status(self):
         '''
-
-        :return:
+        get the status of what to do with the client's captcha session
+        continue - send more images
+        pass - the client passed the captcha
+        fail - the client failed the captcha
+        :return: captcha session status
         '''
         status = "continue"
 

@@ -24,7 +24,7 @@ class ServerComm:
         main loop of communications server
         '''
         # open server
-        self.server_socket.bind(('0.0.0.0', PORT))
+        self.server_socket.bind(('0.0.0.0', self.port))
         self.server_socket.listen(3)
 
         print("Server running.")
