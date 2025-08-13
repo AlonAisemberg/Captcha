@@ -1,7 +1,6 @@
 import math
 import threading
 from io import BytesIO
-
 import ClientComm
 import clientProtocol
 import queue
@@ -9,7 +8,6 @@ import pygame
 import sys
 from shared import *
 import ipaddress
-
 import base64
 import tempfile
 import os
