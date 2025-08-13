@@ -84,6 +84,9 @@ end_status = ['']
 # index of current clicked button
 clicked_index = -1
 
+# index of current hovered over button
+hovering_index = -1
+
 def get_img(comm, data):
     '''
 
@@ -222,23 +225,26 @@ if __name__ == '__main__':
                     # display guess text
                     display_text(GUESS_TEXT, FONT_RUBIK_48, WHITE, GUESS_TEXT_POS)
 
+                    # check if the mouse cursor is on a fruit img
+                    hovering_index = -1
+                    for i, pos in enumerate(img_positions):
+                        bottom_right = tuple(a + b - 1 for a, b in zip(pos, FRUIT_IMG_SIZE))
+                        if check_button(pos, bottom_right, pygame.mouse.get_pos()):
+                            hovering_index = i
+                            break
+
+
                     # check inputs
                     for event in pygame.event.get():
                         # check for quit
                         if event.type == pygame.QUIT:
                             close()
-
-                        for i, pos in enumerate(img_positions):
-                            bottom_right = tuple(a + b - 1 for a, b in zip(pos, FRUIT_IMG_SIZE))
-                            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1 and check_button(pos, bottom_right, event.pos):
-                                clicked_index = i
-
-                        if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
-                            # get clicked fruit img corners
-                            pos = img_positions[clicked_index]
-                            bottom_right = tuple(a + b - 1 for a, b in zip(pos, FRUIT_IMG_SIZE))
-                            # check if released on the clicked fruit
-                            if check_button(pos, bottom_right, event.pos):
+                        # check if fruit img clicked
+                        elif hovering_index != -1 and event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                            clicked_index = hovering_index
+                        elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+                            # check if the mouse is released on the fruit img that was clicked
+                            if hovering_index != -1 and clicked_index == hovering_index:
                                 # clear fruit images list
                                 received_images.clear()
 
@@ -250,12 +256,12 @@ if __name__ == '__main__':
                             # reset clicked index
                             clicked_index = -1
 
-                    if clicked_index == -1:
-                        for i, pos in enumerate(img_positions):
-                            bottom_right = tuple(a + b - 1 for a, b in zip(pos, FRUIT_IMG_SIZE))
-                            if check_button(pos, bottom_right, pygame.mouse.get_pos()):
-                                screen.blit(HOVER_OVERLAY, pos)
-                    else:
+                    # check if a fruit is being hovered over but not clicked, and apply overlay
+                    if clicked_index == -1 and hovering_index != -1:
+                        pos = img_positions[hovering_index]
+                        screen.blit(HOVER_OVERLAY, pos)
+                    # check if a fruit is being clicked, and apply overlay
+                    elif clicked_index != -1:
                         pos = img_positions[clicked_index]
                         screen.blit(CLICK_OVERLAY, pos)
 
