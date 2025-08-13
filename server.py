@@ -8,10 +8,11 @@ import random
 import sys
 import pygame
 from captchasession import CaptchaSession
-from shared import *
 import captchasession
 import base64
 
+# port
+PORT = 900
 
 # clock
 clock = pygame.time.Clock()

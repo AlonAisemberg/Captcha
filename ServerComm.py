@@ -3,7 +3,6 @@ import threading
 import select
 import aesCipher
 import diffieHellman
-from shared import *
 
 class ServerComm:
     def __init__(self, port, recvQ):

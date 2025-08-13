@@ -1,6 +1,3 @@
-import pygame
-from shared import *
-
 MAX_ATTEMPTS = 5
 REQUIRED_SUCCESSES = 3
 

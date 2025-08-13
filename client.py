@@ -6,7 +6,6 @@ import clientProtocol
 import queue
 import pygame
 import sys
-from shared import *
 import ipaddress
 import base64
 import tempfile
@@ -14,6 +13,9 @@ import os
 
 # ip of server
 SERVER_IP = "127.0.0.1"
+
+# port
+PORT = 900
 
 # check validity of server ip
 try:
