@@ -82,7 +82,7 @@ state = ['waiting']
 end_status = ['']
 
 # index of current clicked button
-clicked_index = None
+clicked_index = -1
 
 def get_img(comm, data):
     '''
@@ -234,9 +234,10 @@ if __name__ == '__main__':
                                 clicked_index = i
 
                         if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+                            # get clicked fruit img corners
                             pos = img_positions[clicked_index]
-                            clicked_index = None
                             bottom_right = tuple(a + b - 1 for a, b in zip(pos, FRUIT_IMG_SIZE))
+                            # check if released on the clicked fruit
                             if check_button(pos, bottom_right, event.pos):
                                 # clear fruit images list
                                 received_images.clear()
@@ -246,9 +247,10 @@ if __name__ == '__main__':
 
                                 # exit both loops
                                 state[0] = 'waiting'
-                                break
+                            # reset clicked index
+                            clicked_index = -1
 
-                    if not clicked_index:
+                    if clicked_index == -1:
                         for i, pos in enumerate(img_positions):
                             bottom_right = tuple(a + b - 1 for a, b in zip(pos, FRUIT_IMG_SIZE))
                             if check_button(pos, bottom_right, pygame.mouse.get_pos()):
