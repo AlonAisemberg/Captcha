@@ -101,42 +101,42 @@ hovering_index = -1
 
 def get_img(comm, data):
     '''
-
-    :param comm:
-    :param data:
-    :return:
+    handle receiving an image from the server
+    :param comm: communications client
+    :param data: image date
     '''
+    # check that image data was received
     if not data:
         print("No image data received")
-        return
+    else:
+        # extract the base64 image string
+        b64_img_str = data[0]
 
-    b64_img_str = data[0]
-    try:
-        img_bytes = base64.b64decode(b64_img_str)
-    except Exception as e:
-        print(f"Error decoding base64 image data: {e}")
-        return
+        # decode the base64 string into raw bytes
+        try:
+            img_bytes = base64.b64decode(b64_img_str)
+        except Exception as e:
+            print(f"Error decoding base64 image data: {e}")
+        else:
+            # load the image from bytes into a pygame surface
+            img_file = BytesIO(img_bytes)
+            try:
+                image_surface = pygame.image.load(img_file).convert_alpha()
+            except Exception as e:
+                print(f"Error loading image into pygame surface: {e}")
+            else:
+                # store the successfully loaded image
+                received_images.append(image_surface)
 
-    img_file = BytesIO(img_bytes)
-    try:
-        image_surface = pygame.image.load(img_file).convert_alpha()
-    except Exception as e:
-        print(f"Error loading image into pygame surface: {e}")
-        return
-
-    # store the images
-    received_images.append(image_surface)
-
-    # increase loading bar length
-    loading_fill.width += INCREMENT_PER_IMAGE
+                # increase the loading bar length
+                loading_fill.width += INCREMENT_PER_IMAGE
 
 
 def get_end_status(comm, data):
     '''
-
-    :param comm:
-    :param data:
-    :return:
+    get end status from server and set the state of the client to done
+    :param comm: communications client
+    :param data: end status (pass/fail)
     '''
     state[0] = 'done'
     end_status[0] = data[0]

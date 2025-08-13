@@ -24,8 +24,8 @@ def generate_captcha(comm, ip):
     '''
     choose random images and store the correct answer,
     send the random images to the client
-    :param ip:
-    :return:
+    :param comm: communications server
+    :param ip: ip of client
     '''
     # choose random number as the index of the rotten fruit
     rotten = random.randint(0, 8)
@@ -66,10 +66,10 @@ def generate_captcha(comm, ip):
 
 def handle_guess(comm, ip, data):
     '''
-
-    :param comm:
-    :param ip:
-    :param data:
+    handle a guess from a client
+    :param comm: communications server
+    :param ip: ip of client
+    :param data: the client's guess (0-8)
     :return:
     '''
     answer = int(data[0])

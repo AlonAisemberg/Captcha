@@ -34,9 +34,10 @@ class ClientComm:
 
     def recv_all(self, length):
         '''
-
-        :param length:
-        :return:
+        receive data from the server, this function can also be used to receive a very large amount of data that
+        exceeds 1024 bytes
+        :param length: length of the data
+        :return: fully received data
         '''
         data = b''
         while len(data) < length:
@@ -60,8 +61,6 @@ class ClientComm:
                 length_bytes = self.recv_all(6)
                 data_len = int(length_bytes.decode())
                 data = self.recv_all(data_len)
-                # data_len = int(self.my_socket.recv(3).decode())
-                # data = self.my_socket.recv(data_len)
             except Exception as e:
                 print(f"Error in mainLoop: {e}")
                 self.close_client()
