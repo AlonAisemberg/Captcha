@@ -22,7 +22,7 @@ try:
     ipaddress.ip_address(SERVER_IP)
 except Exception:
     sys.exit("Invalid IP entered.")
-
+#AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 # initialize pygame
 pygame.init()
 
