@@ -23,7 +23,7 @@ try:
 except Exception:
     sys.exit("Invalid IP entered.")
 
-# intialize pygame
+# initialize pygame
 pygame.init()
 
 # set display and program caption
