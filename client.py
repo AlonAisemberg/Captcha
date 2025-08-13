@@ -14,13 +14,16 @@ import base64
 import tempfile
 import os
 
+# ip of server
 SERVER_IP = "127.0.0.1"
 
+# check validity of server ip
 try:
     ipaddress.ip_address(SERVER_IP)
 except Exception:
     sys.exit("Invalid IP entered.")
 
+# intialize pygame
 pygame.init()
 
 # set display and program caption
@@ -44,7 +47,7 @@ END_IMG_POSITION = (509, 229)
 font_rubik_48 = pygame.font.Font("Rubik-Medium.ttf", 48)
 
 # guess text
-GUESS_TEXT = "Click on the rotten fruit."
+GUESS_TEXT = "Click on the rotten fruit"
 GUESS_TEXT_POS = (365, 620)
 
 # fruit images
