@@ -32,16 +32,16 @@ pygame.display.set_caption("Captcha")
 clock = pygame.time.Clock()
 
 # load images
-BACKGROUND_IMG = pygame.image.load("graphics/background.png")
-IMG_SLOTS = pygame.image.load("graphics/imgslots.png")
+background_img = pygame.image.load("graphics/background.png")
+img_slots = pygame.image.load("graphics/imgslots.png")
 IMG_SLOTS_POSITION = (384, 74)
-PASS_IMG = pygame.image.load("graphics/pass.png")
-FAIL_IMG = pygame.image.load("graphics/fail.png")
-END_IMG = FAIL_IMG
+pass_img = pygame.image.load("graphics/pass.png")
+fail_img = pygame.image.load("graphics/fail.png")
+END_IMG = fail_img
 END_IMG_POSITION = (509, 229)
 
 # load font
-FONT_RUBIK_48 = pygame.font.Font("Rubik-Medium.ttf", 48)
+font_rubik_48 = pygame.font.Font("Rubik-Medium.ttf", 48)
 
 # guess text
 GUESS_TEXT = "Click on the rotten fruit."
@@ -70,10 +70,19 @@ img_positions = [
 WHITE = (255, 255, 255)
 
 # button overlays
-HOVER_OVERLAY = pygame.Surface((160, 160), pygame.SRCALPHA)
-HOVER_OVERLAY.fill((150, 150, 150, 60))
-CLICK_OVERLAY = pygame.Surface((160, 160), pygame.SRCALPHA)
-CLICK_OVERLAY.fill((50, 50, 50, 100))
+hover_overlay = pygame.Surface((160, 160), pygame.SRCALPHA)
+hover_overlay.fill((150, 150, 150, 60))
+click_overlay = pygame.Surface((160, 160), pygame.SRCALPHA)
+click_overlay.fill((50, 50, 50, 100))
+
+# loading bar stuff
+loading_background_bar = pygame.Rect(538, 349, 205, 22)
+LOADING_BACKGROUND_BAR_COLOR = (74, 98, 116)
+loading_fill = pygame.Rect(538, 349, 0, 22)
+LOADING_FILL_COLOR = (198, 230, 255)
+loading_bar_outline = pygame.image.load("graphics/loading_outline.png")
+LOADING_OUTLINE_POSITION = (535, 346)
+INCREMENT_PER_IMAGE = 23
 
 # current state of the program (waiting, guessing, done)
 state = ['waiting']
@@ -114,6 +123,9 @@ def get_img(comm, data):
 
     # store the images
     received_images.append(image_surface)
+
+    # increase loading bar length
+    loading_fill.width += INCREMENT_PER_IMAGE
 
 
 def get_end_status(comm, data):
@@ -199,15 +211,22 @@ if __name__ == '__main__':
     running = True
     while running:
         if state[0] == 'waiting':
-            # display background
-            screen.blit(BACKGROUND_IMG, (0, 0))
-
-            # update display
-            pygame.display.update()
-
             # wait for images
             while len(received_images) < 9 and state[0] == 'waiting':
-                pass
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        close()
+
+                # display background
+                screen.blit(background_img, (0, 0))
+
+                # display loading bar
+                pygame.draw.rect(screen, LOADING_BACKGROUND_BAR_COLOR, loading_background_bar)
+                pygame.draw.rect(screen, LOADING_FILL_COLOR, loading_fill)
+                screen.blit(loading_bar_outline, LOADING_OUTLINE_POSITION)
+
+                # update display
+                pygame.display.update()
 
             # check if actually waiting and not done
             if state[0] == 'waiting':
@@ -215,15 +234,15 @@ if __name__ == '__main__':
                 state[0] = 'guessing'
                 while state[0] == 'guessing':
                     # display background
-                    screen.blit(BACKGROUND_IMG, (0, 0))
+                    screen.blit(background_img, (0, 0))
 
                     # display fruit images
-                    screen.blit(IMG_SLOTS, IMG_SLOTS_POSITION)
+                    screen.blit(img_slots, IMG_SLOTS_POSITION)
                     for i, img in enumerate(received_images):
                         screen.blit(img, img_positions[i])
 
                     # display guess text
-                    display_text(GUESS_TEXT, FONT_RUBIK_48, WHITE, GUESS_TEXT_POS)
+                    display_text(GUESS_TEXT, font_rubik_48, WHITE, GUESS_TEXT_POS)
 
                     # check if the mouse cursor is on a fruit img
                     hovering_index = -1
@@ -248,6 +267,9 @@ if __name__ == '__main__':
                                 # clear fruit images list
                                 received_images.clear()
 
+                                # reset loading bar
+                                loading_fill.width = 0
+
                                 # send guess
                                 myComm.send_msg(clientProtocol.send_guess(clicked_index))
 
@@ -259,11 +281,11 @@ if __name__ == '__main__':
                     # check if a fruit is being hovered over but not clicked, and apply overlay
                     if clicked_index == -1 and hovering_index != -1:
                         pos = img_positions[hovering_index]
-                        screen.blit(HOVER_OVERLAY, pos)
+                        screen.blit(hover_overlay, pos)
                     # check if a fruit is being clicked, and apply overlay
                     elif clicked_index != -1:
                         pos = img_positions[clicked_index]
-                        screen.blit(CLICK_OVERLAY, pos)
+                        screen.blit(click_overlay, pos)
 
                     # update display
                     pygame.display.update()
@@ -271,12 +293,12 @@ if __name__ == '__main__':
         elif state[0] == 'done':
             # set pass/fail image
             if end_status[0] == 'pass':
-                END_IMG = PASS_IMG
+                END_IMG = pass_img
             else:
-                END_IMG = FAIL_IMG
+                END_IMG = fail_img
 
             # display background
-            screen.blit(BACKGROUND_IMG, (0, 0))
+            screen.blit(background_img, (0, 0))
 
             # display pass graphics
             screen.blit(END_IMG, END_IMG_POSITION)
