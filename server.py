@@ -1,15 +1,15 @@
+import base64
 import os
-import threading
-import ServerComm
-import serverProtocol
 import queue
-import time
 import random
 import sys
+import threading
+
 import pygame
-from captchasession import CaptchaSession
-import captchasession
-import base64
+
+import serverComm
+import serverProtocol
+from captchaSession import CaptchaSession
 
 # port
 PORT = 900
@@ -22,12 +22,12 @@ captcha_sessions = {}
 
 
 def generate_captcha(comm, ip):
-    '''
+    """
     choose random images and store the correct answer,
     send the random images to the client
     :param comm: communications server
     :param ip: ip of client
-    '''
+    """
     # choose random number as the index of the rotten fruit
     rotten = random.randint(0, 8)
     captcha_sessions[ip].current_correct_answer = rotten
@@ -66,13 +66,13 @@ def generate_captcha(comm, ip):
 
 
 def handle_guess(comm, ip, data):
-    '''
+    """
     handle a guess from a client
     :param comm: communications server
     :param ip: ip of client
     :param data: the client's guess (0-8)
     :return:
-    '''
+    """
     answer = int(data[0])
 
     # handle client's answer
@@ -92,12 +92,12 @@ def handle_guess(comm, ip, data):
 
 
 def client_connected(comm, ip, data):
-    '''
+    """
     handle client connecting
     :param comm: communications server
     :param ip: ip of player who connected
     :param data: none
-    '''
+    """
 
     # add the player to the home players list
     captcha_sessions[ip] = CaptchaSession()
@@ -108,12 +108,12 @@ def client_connected(comm, ip, data):
 
 
 def remove_client(comm, ip, data):
-    '''
+    """
     handle removing client
     :param comm: none
     :param ip: ip of client
     :param data: none
-    '''
+    """
     del captcha_sessions[ip]
 
 
@@ -126,11 +126,11 @@ commands = {
 
 
 def handle_msgs(comm, recvQ):
-    '''
+    """
     handle incoming messages from the client
     :param comm: communications server
     :param recvQ: queue of received messages
-    '''
+    """
     while True:
         ip, msg = recvQ.get()
         opcode, data = serverProtocol.unpack(msg)
@@ -140,7 +140,7 @@ def handle_msgs(comm, recvQ):
 
 if __name__ == '__main__':
     msgsQ = queue.Queue()
-    myServer = ServerComm.ServerComm(PORT, msgsQ)
+    myServer = serverComm.ServerComm(PORT, msgsQ)
     threading.Thread(target=handle_msgs, args=(myServer, msgsQ)).start()
 
     # program loop

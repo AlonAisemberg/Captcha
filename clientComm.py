@@ -1,18 +1,19 @@
 import socket
 import sys
 import threading
+
 import aesCipher
 import diffieHellman
 
 
 class ClientComm:
     def __init__(self, server_ip, port, recvQ):
-        '''
-        intialize comms client
+        """
+        initialize comms client
         :param server_ip: server ip
         :param port: port
         :param recvQ: received message queue
-        '''
+        """
         self.my_socket = socket.socket()
         self.server_ip = server_ip
         self.port = port
@@ -33,12 +34,12 @@ class ClientComm:
 
 
     def recv_all(self, length):
-        '''
+        """
         receive data from the server, this function can also be used to receive a very large amount of data that
         exceeds 1024 bytes
         :param length: length of the data
         :return: fully received data
-        '''
+        """
         data = b''
         while len(data) < length:
             packet = self.my_socket.recv(min(length - len(data), 1024))
@@ -50,9 +51,9 @@ class ClientComm:
 
 
     def _mainLoop(self):
-        '''
+        """
         main loop of communications client
-        '''
+        """
         # main loop
         while True:
             # handle receiving a message
@@ -78,9 +79,9 @@ class ClientComm:
 
 
     def _change_key(self):
-        '''
+        """
         exchange key with the server
-        '''
+        """
         diffie = diffieHellman.DiffieHellman()
         public_key = diffie.get_public_key()
 
@@ -99,18 +100,18 @@ class ClientComm:
 
 
     def close_client(self):
-        '''
+        """
         close the socket
-        '''
+        """
         self.my_socket.close()
         sys.exit("bye :)")
 
 
     def send_msg(self, msg):
-        '''
+        """
         encrypt and send a message to the server
         :param msg: msg to send
-        '''
+        """
         # encrypt and build full message
         encrypted_msg = self.cipher.encrypt(msg)
         full_msg = str(len(encrypted_msg)).zfill(3).encode() + encrypted_msg

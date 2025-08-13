@@ -1,15 +1,14 @@
-import math
+import base64
+import ipaddress
+import queue
+import sys
 import threading
 from io import BytesIO
-import ClientComm
-import clientProtocol
-import queue
+
 import pygame
-import sys
-import ipaddress
-import base64
-import tempfile
-import os
+
+import clientComm
+import clientProtocol
 
 # ip of server
 SERVER_IP = "127.0.0.1"
@@ -73,9 +72,9 @@ img_positions = [
 WHITE = (255, 255, 255)
 
 # button overlays
-hover_overlay = pygame.Surface((160, 160), pygame.SRCALPHA)
+hover_overlay = pygame.Surface(FRUIT_IMG_SIZE, pygame.SRCALPHA)
 hover_overlay.fill((150, 150, 150, 60))
-click_overlay = pygame.Surface((160, 160), pygame.SRCALPHA)
+click_overlay = pygame.Surface(FRUIT_IMG_SIZE, pygame.SRCALPHA)
 click_overlay.fill((50, 50, 50, 100))
 
 # loading bar stuff
@@ -88,9 +87,14 @@ LOADING_OUTLINE_POSITION = (535, 346)
 INCREMENT_PER_IMAGE = 23
 
 # current state of the program (waiting, guessing, done)
-state = ['waiting']
+WAITING = 'waiting'
+GUESSING = 'guessing'
+DONE = 'done'
+state = [WAITING]
 
 # pass or fail status
+PASS = 'pass'
+FAIL = 'fail'
 end_status = ['']
 
 # index of current clicked button
@@ -100,11 +104,11 @@ clicked_index = -1
 hovering_index = -1
 
 def get_img(comm, data):
-    '''
+    """
     handle receiving an image from the server
     :param comm: communications client
     :param data: image date
-    '''
+    """
     # check that image data was received
     if not data:
         print("No image data received")
@@ -133,12 +137,12 @@ def get_img(comm, data):
 
 
 def get_end_status(comm, data):
-    '''
+    """
     get end status from server and set the state of the client to done
     :param comm: communications client
     :param data: end status (pass/fail)
-    '''
-    state[0] = 'done'
+    """
+    state[0] = DONE
     end_status[0] = data[0]
 
 
@@ -150,20 +154,20 @@ commands = {
 
 
 def close():
-    '''
+    """
     handle closing the program
-    '''
+    """
     pygame.quit()
     myComm.close_client()
     sys.exit("-exit-")
 
 
 def handle_msgs(comm, recvQ):
-    '''
+    """
     handle incoming messages from the server
     :param comm: communications client
     :param recvQ: queue of received messages
-    '''
+    """
     while True:
         msg = recvQ.get()
         opcode, data = clientProtocol.unpack(msg)
@@ -172,25 +176,25 @@ def handle_msgs(comm, recvQ):
 
 
 def display_text(text, font, color, position):
-    '''
+    """
     display text on the screen
     :param text: string of text
     :param font: text font
     :param color: text color
     :param position: position on screen
-    '''
+    """
     text_surface = font.render(text, True, color)
     screen.blit(text_surface, position)
 
 
 def check_button(button_top_left, button_bottom_right, mouse_pos):
-    '''
+    """
     check if the mouse position is on a button
     :param button_top_left: top left position of button
     :param button_bottom_right: bottom right position of button
     :param mouse_pos: position of mouse
     :return: true if the mouse position is on the button, false otherwise
-    '''
+    """
     # split positions into x's and y's
     left_x, top_y = button_top_left
     right_x, bottom_y = button_bottom_right
@@ -202,7 +206,7 @@ def check_button(button_top_left, button_bottom_right, mouse_pos):
 
 if __name__ == '__main__':
     msgsQ = queue.Queue()
-    myComm = ClientComm.ClientComm(SERVER_IP, PORT, msgsQ)
+    myComm = clientComm.ClientComm(SERVER_IP, PORT, msgsQ)
     threading.Thread(target=handle_msgs, args=(myComm, msgsQ), daemon=True).start()
 
 
@@ -213,9 +217,9 @@ if __name__ == '__main__':
     # main code loop
     running = True
     while running:
-        if state[0] == 'waiting':
+        if state[0] == WAITING:
             # wait for images
-            while len(received_images) < 9 and state[0] == 'waiting':
+            while len(received_images) < 9 and state[0] == WAITING:
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         close()
@@ -232,10 +236,10 @@ if __name__ == '__main__':
                 pygame.display.update()
 
             # check if actually waiting and not done
-            if state[0] == 'waiting':
+            if state[0] == WAITING:
                 # get input
-                state[0] = 'guessing'
-                while state[0] == 'guessing':
+                state[0] = GUESSING
+                while state[0] == GUESSING:
                     # display background
                     screen.blit(background_img, (0, 0))
 
@@ -277,7 +281,7 @@ if __name__ == '__main__':
                                 myComm.send_msg(clientProtocol.send_guess(clicked_index))
 
                                 # exit both loops
-                                state[0] = 'waiting'
+                                state[0] = WAITING
                             # reset clicked index
                             clicked_index = -1
 
@@ -293,9 +297,9 @@ if __name__ == '__main__':
                     # update display
                     pygame.display.update()
 
-        elif state[0] == 'done':
+        elif state[0] == DONE:
             # set pass/fail image
-            if end_status[0] == 'pass':
+            if end_status[0] == PASS:
                 END_IMG = pass_img
             else:
                 END_IMG = fail_img

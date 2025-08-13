@@ -1,16 +1,19 @@
 import socket
 import threading
+
 import select
+
 import aesCipher
 import diffieHellman
 
+
 class ServerComm:
     def __init__(self, port, recvQ):
-        '''
+        """
         initialize comms server
         :param port: port
         :param recvQ: received messages queue
-        '''
+        """
         self.server_socket = socket.socket()
         self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.port = port
@@ -20,9 +23,9 @@ class ServerComm:
         threading.Thread(target=self._mainLoop).start()
 
     def _mainLoop(self):
-        '''
+        """
         main loop of communications server
-        '''
+        """
         # open server
         self.server_socket.bind(('0.0.0.0', self.port))
         self.server_socket.listen(3)
@@ -71,11 +74,11 @@ class ServerComm:
                             self.close_client(self.open_clients[current_socket][0])
 
     def _change_key(self, client_soc, client_ip):
-        '''
+        """
         exchange key with a client
         :param client_soc: client soc
         :param client_ip: client ip
-        '''
+        """
         diffie = diffieHellman.DiffieHellman()
         public_key = diffie.get_public_key()
 
@@ -100,19 +103,19 @@ class ServerComm:
 
 
     def _find_socket_by_ip(self, client_ip):
-        '''
+        """
         get the socket of a client by the client's ip
         :param client_ip: client ip
         :return: socket of client
-        '''
+        """
         return next((socket for socket in self.open_clients.keys() if self.open_clients[socket][0] == client_ip), None)
 
 
     def _close_client(self, client_soc):
-        '''
+        """
         close a client
         :param client_soc: client soc
-        '''
+        """
         if client_soc in self.open_clients.keys():
             print(f'({self.open_clients[client_soc][0]}) - disconnected')
             del self.open_clients[client_soc]
@@ -120,10 +123,10 @@ class ServerComm:
 
 
     def close_client(self, client_ip):
-        '''
+        """
         close a client
         :param client_ip: client ip
-        '''
+        """
         # send close client message to main server code
         self.recvQ.put((client_ip, "99"))
 
@@ -132,11 +135,11 @@ class ServerComm:
         
 
     def send_msg(self, client_ip, msg):
-        '''
+        """
         encrypt and send a message to a client
         :param client_ip: client ip
         :param msg: msg to send
-        '''
+        """
         current_soc = self._find_socket_by_ip(client_ip)
         if current_soc:
             # encrypt and build full message
